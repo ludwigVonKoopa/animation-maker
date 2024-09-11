@@ -1,0 +1,45 @@
+name: anim_dev
+channels:
+  - conda-forge
+
+dependencies:
+  # usefull and needed for all projects
+  - python>=3.9
+  - setuptools-scm   # automatic project numbering
+  - ipykernel        # if you want jupyter to see your env
+  - pip
+
+  # for your project
+  - numpy
+
+  - cartopy
+  - matplotlib
+  # - cython
+  # - netCDF4
+  # - xarray
+  # - pandas
+
+  - matplotlib
+
+  # - PyYAML
+  # - zarr
+
+  #### tests
+  - pytest
+  - pytest-cov
+  - pytest-mpl
+
+  #### doc
+  - sphinx
+  - pydata-sphinx-theme
+  - sphinx-gallery
+
+  #### dev
+  - black
+  # - mypy
+  - flake8
+  - isort
+  - pre-commit
+  - ruff
+  # - pip:
+  #   -

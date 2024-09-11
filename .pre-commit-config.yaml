@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+        # Prevent giant files from being committed
+      - id: check-added-large-files
+        # Check for files that contain merge conflict strings
+      - id: check-merge-conflict
+      - id: check-docstring-first
+        # Attempts to load all yaml files to verify syntax
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+        # Check for debugger imports and py37+ breakpoint() calls in python source
+      - id: debug-statements
+        # Makes sure files end in a newline and only a newline
+      - id: end-of-file-fixer
+        # Replaces or checks mixed line ending
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        # Trims trailing whitespace
+      - id: trailing-whitespace
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: 'v0.6.2'
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes"]
+      - id: ruff-format
+  - repo: https://github.com/asottile/pyupgrade
+    rev: "v3.17.0"
+    hooks:
+    - id: pyupgrade
+  # -   repo: https://github.com/psf/black
+  #     rev: 22.10.0
+  #     hooks:
+  #     -   id: black
