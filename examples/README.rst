@@ -1,5 +1,6 @@
 Gallery
 -------
 
-The following examples show off the functionality of animation-maker. They
-illustrate the kinds of things you can do with this library.
+The following examples show how to use animation-maker.
+
+Each example show a python file and the video created with the python file.

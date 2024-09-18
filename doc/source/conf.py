@@ -21,8 +21,13 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('..'))
 
-import anim
 
+import os
+
+import anim
+import anim.log
+
+logger = anim.log.create_logger(level="INFO")
 # -- General configuration ---------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -42,15 +47,25 @@ extensions = [
     "sphinx.ext.extlinks",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_gallery.gen_gallery",
-    "myst_parser",
+    # "myst_parser",
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+
+PATH_EXEMPLE = os.path.abspath("../../examples")
+
+
 sphinx_gallery_conf = {
-    "examples_dirs": ["../../examples"],
     "gallery_dirs": ["gallery"],
     "filename_pattern": "plot",
+    "capture_repr": ("_repr_html_", "__repr__"),
+    "matplotlib_animations": True,
+    "examples_dirs": [PATH_EXEMPLE],
+    "backreferences_dir": "../build/backrefs",
+    "doc_module": ("anim",),
+    "image_scrapers": ("anim.scrapper.pngScrapper",),
+    "thumbnail_size": (1000, 500),
 }
 
 # The suffix(es) of source filenames.
@@ -130,7 +145,16 @@ html_static_path = ["_static"]
 #
 # html_theme_options = {}
 
-
+# html_logo = "logo_low.gif"
+html_theme_options = {
+    "logo": {
+        "alt_text": "moving earth",
+        "text": f"anim {version}",
+        "image_light": "_static/logo_low.gif",
+        "image_dark": "_static/logo_low.gif",
+    },
+    # "logo_only": False, "display_version": True
+}
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.

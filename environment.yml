@@ -3,17 +3,21 @@ channels:
   - conda-forge
 
 dependencies:
-  # usefull and needed for all projects
   - python>=3.9
   - setuptools-scm   # automatic project numbering
   - ipykernel
   - pip
 
-  # for your project
-  # - numpy
-  # - netCDF4
-  # - PyYAML
+  - matplotlib
+  # - cartopy
+  - shapely
 
-  # - matplotlib
-  # - zarr
-  # - pandas
+  - numpy
+  - pandas
+  - xarray
+  - zarr
+
+  - dask
+  - distirbuted
+  # - PyYAML
+  # - netCDF4
