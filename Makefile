@@ -57,11 +57,14 @@ test-all: ## run tests on every Python version with tox
 
 doc: ## generate Sphinx HTML documentation, including API docs
 	sphinx-build -M html doc/source doc/build
+	cp doc/source/gallery/images/*.mp4 doc/build/html/_images/
 
 dclean:
 	rm -rf doc/build
 	rm -rf doc/source/_autosummary
 	rm -rf doc/source/gallery
+	# rm -rf animation/*
+	rm -rf example_built/*
 	find doc/ -name '*.pyc' -delete
 
 generate_ref:

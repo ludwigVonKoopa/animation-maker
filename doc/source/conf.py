@@ -47,6 +47,8 @@ extensions = [
     "sphinx.ext.extlinks",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_gallery.gen_gallery",
+    "sphinx_design",
+    "sphinxcontrib.video",
     # "myst_parser",
 ]
 # Add any paths that contain templates here, relative to this directory.

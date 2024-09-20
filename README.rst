@@ -1,17 +1,19 @@
-Package to create animation of data
+Package to create animation with matplotlib
 
 
 ========
 Overview
 ========
 
+you define a fonction which build a matplotlib figure, and this package hold all the image generation, parallelisation and merge into a video.
 
 Features
 --------
 
-* TODO: fill it with the incredible feature from your project
-* incredible feature 1
-* incredible feature 2
+* build images in parallel
+* merge images with ffmpeg
+
+
 
 
 Installation

@@ -31,6 +31,8 @@ dependencies:
   - sphinx
   - pydata-sphinx-theme
   - sphinx-gallery
+  - sphinx_design
+  - sphinxcontrib-video
 
   #### dev
   - black

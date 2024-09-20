@@ -3,6 +3,7 @@ import os
 import time
 
 import numpy as np
+import xarray as xr
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,7 @@ class Timing:
         return f"{self.dt*self.scale[self.unit]:.2f}{self.unit}"
 
 
-def zarr_weight(group):
-    "compute size of all variable contained in the group"
-    return sum(group[var].nbytes_stored for var in group.array_keys())
-
-
-def get_imgName(n_frames=None):
+def image_patern(n_frames=None):
     """compute how many leading 0 is needed in the name
 
     Parameters
@@ -78,10 +74,7 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
     """
 
     with Timing() as dt:
-        name, ext = os.path.splitext(videoName)
-        if ext != ".mp4":
-            ext = ext + ".mp4"
-        videoName = name + ext
+        _check_video_name(videoName)
 
         try:
             os.makedirs(os.path.dirname(videoName), exist_ok=True)
@@ -89,7 +82,7 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
             pass
 
         cmd = (
-            "ffmpeg "
+            "ffmpeg -loglevel quiet "
             f" -framerate {fps} "
             f" -i {imagePatern} "
             f" -c:v {vcodec} "
@@ -101,20 +94,26 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
 
         logger.info("ffmpeg command : \n%s", cmd)
         os.system(cmd)
-    logger.warning(f"video {videoName} done! (ffmpeg time : {dt})")
+    logger.info(f"video {videoName} done! (ffmpeg time : {dt})")
 
     return videoName
 
 
-def video2gif(videoName, gifName, gif_fps=10, scale=350):
+def _check_video_name(videoName):
+    name, ext = os.path.splitext(videoName)
+    if ext != ".mp4":
+        msg = "Please give a valid videoName which ends by '.mp4'"
+        logger.error(msg)
+        raise ValueError(msg)
+
+
+def video2gif(videoName, gif_fps=10, scale=350):
     """convert mp4 into gif
 
     Parameters
     ----------
     videoName : str
         video name
-    gifName : str
-        output gif name
     gif_fps : int, optional
         frame per seconds for the gif, by default 15
     scale : int, optional
@@ -122,6 +121,9 @@ def video2gif(videoName, gifName, gif_fps=10, scale=350):
     """
 
     with Timing() as dt:
+        _check_video_name(videoName)
+
+        gifName = videoName.replace(".mp4", ".gif")
         # palette = "/tmp/palette.png"
         # filters = f"fps={gif_fps},scale=-1:{scale}:flags=lanczos"
 
@@ -132,14 +134,42 @@ def video2gif(videoName, gifName, gif_fps=10, scale=350):
 
         # os.system(cmd)
         cmd = (
-            "ffmpeg "
+            "ffmpeg -loglevel quiet "
             f" -i {videoName} "
             f' -vf "fps={gif_fps},scale=-1:{scale}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"'
             " -loop 0"
             f" -y {gifName}"
         )
-        logger.error(cmd)
+        logger.info(cmd)
         os.system(cmd)
     logger.warning(f"gif {gifName} fait! (temps ffmpeg : {dt})")
 
     return gifName
+
+
+def _sanitize_inputs(max_frames, compute):
+    # at least one of max_frames and compute have to be defined
+    if max_frames is None and compute is None:
+        raise ValueError("`max_frames` or `compute` have to be defined")
+
+    # both are defined : OK
+    elif (max_frames is not None) and (compute is not None):
+        # compute = compute
+        pass
+
+    # only max_frames is defined => loop until the end using compute
+    elif max_frames is None:
+        max_frames = -10
+
+        if not hasattr(compute, "__call__"):
+            raise ValueError("`compute` need to be a function. Please check docstring to provide correct function")
+
+    elif compute is None:
+
+        def custom_compute():
+            for _ in range(max_frames):
+                yield xr.Dataset()
+
+        compute = custom_compute
+
+    return max_frames, iter(compute())
