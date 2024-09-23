@@ -5,14 +5,20 @@ Package to create animation with matplotlib
 Overview
 ========
 
-you define a fonction which build a matplotlib figure, and this package hold all the image generation, parallelisation and merge into a video.
+.. image:: _static/logo_low.gif
+
+
+| ``anim`` is a python package to build animation from matplotlib plots.
+
+You only have to define a fonction which return an matplotlib image, and ``anim`` takes care of the image generation, parallelisation and merging them into a video
+
 
 Features
 --------
 
-* build images in parallel
-* merge images with ffmpeg
-
+* build images in parallel widh ``dask``
+* merge images with ``ffmpeg``
+* build gif from the video
 
 
 

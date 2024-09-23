@@ -75,6 +75,13 @@ def usage():
         help="Create a 5s gif (by default) to test the animation",
     )
 
+    group2.add_argument(
+        "--folder",
+        type=str,
+        default=None,
+        help="specify the folder where images and video will be stored. Overwrite the `ANIM_OUTPUT_FOLDER` in the python script",
+    )
+
     return parser.parse_args()
 
 
@@ -119,6 +126,10 @@ def app():
             logging.error(msg)
             raise ValueError(msg)
 
+        # parameter specified in command line overwrite the script one
+        if args.folder is not None:
+            FOLDER = args.folder
+
         func_plot = namespace.get("plot", None)
         if func_plot is None:
             msg = "miss function named `plot` in the python file"
@@ -131,9 +142,10 @@ def app():
             logging.error(msg)
             raise ValueError(msg)
 
-        max_frames = namespace.get("ANIM_MAX_FRAMES", None)
         compute = namespace.get("compute", None)
         savefig_kwargs = namespace.get("ANIM_SAVEFIG_KWARGS", dict())
+        max_frames = namespace.get("ANIM_MAX_FRAMES", None)
+        max_frames = args.gif * fps if args.gif is not False else max_frames
 
         get_dask_client = namespace.get("get_dask_client", None)
 

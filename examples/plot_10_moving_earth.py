@@ -24,7 +24,7 @@ def plot(i_image, *args):
     center_lon = dlon % 360
     center_lat = 0
 
-    fig = plt.figure(figsize=(6, 6), dpi=90)
+    fig = plt.figure(figsize=(4, 4), dpi=90)
 
     proj2 = ccrs.Orthographic(central_latitude=center_lat, central_longitude=center_lon % 360)
 
@@ -35,10 +35,6 @@ def plot(i_image, *args):
     ax.add_feature(cfeature.OCEAN)
     ax.set_global()
 
-    ax.set_title(f"i_image={i_image:03d}, camera_lon={center_lon:7.2f}, camera_lat={center_lat:7.2f}")
+    ax.set_title(f"frame={i_image:03d}, camera_lon={center_lon:7.2f}, camera_lat={center_lat:7.2f}")
 
     return fig
-
-    # crop 7.49Mo
-    #   => Color reduction 8 = 2.39Mo
-    #   => optimize transparency 3% = 1.44Mo =>

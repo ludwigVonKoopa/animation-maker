@@ -1,5 +1,7 @@
 """
 
+.. _compute_exemple:
+
 Animation using computed data
 #############################
 
@@ -39,7 +41,6 @@ def plot(i, ds):
     fig, ax = plt.subplots(1, 1, figsize=(4, 4), dpi=120)
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
-    # print(ds)
     size = ds.sizes["size"]
 
     ax.scatter(ds.x, ds.y, s=np.arange(size) * 70, alpha=np.arange(size) / size)

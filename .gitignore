@@ -46,11 +46,13 @@ doc/_build/
 doc/build/
 doc/source/_autosummary
 doc/source/gallery
+doc/source/_static/logo_low.gif
 mpl_comparaison
 
 # matplotlib gallery
 example_built
 doc/source/sg_execution_times.rst
+tmp/
 
 # Jupyter Notebook
 .ipynb_checkpoints

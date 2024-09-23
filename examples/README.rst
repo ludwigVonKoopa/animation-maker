@@ -1,7 +1,7 @@
 .. _gallery_reference:
 
-Gallery
--------
+Examples
+--------
 
 The following examples show how to use animation-maker.
 

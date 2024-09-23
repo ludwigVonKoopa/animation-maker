@@ -23,6 +23,7 @@ def pngScrapper(block, block_vars, gallery_conf, **kwargs):
     plot = namespace["plot"]
 
     ANIM_MAX_FRAMES = namespace.get("ANIM_MAX_FRAMES", None)
+    ANIM_SAVEFIG_KWARGS = namespace.get("ANIM_SAVEFIG_KWARGS", dict())
     compute = namespace.get("compute", None)
 
     name = os.path.splitext(os.path.os.path.basename(block_vars["src_file"]))[0]
@@ -46,6 +47,7 @@ def pngScrapper(block, block_vars, gallery_conf, **kwargs):
         fps=ANIM_FPS,
         compute=compute,
         max_frames=ANIM_MAX_FRAMES,
+        savefig_kwargs=ANIM_SAVEFIG_KWARGS,
         # gif=10,
         # force=True,
         # only_convert=True,

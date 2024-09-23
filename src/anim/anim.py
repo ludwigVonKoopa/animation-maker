@@ -315,7 +315,7 @@ def animate(
             client=client,
             max_memory_ds=max_memory_ds,
         )
-        logger.info("\n" + df.describe())
+        logger.info("\n" + str(df.describe()))
 
     videoName = "video.mp4"
 
