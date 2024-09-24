@@ -223,3 +223,12 @@ If you don't specify a ``compute`` function that's actually what anim does under
 The ``xarray.Dataset`` that the compute fonction yield is actually passed in the ``plot`` function as the ``ds`` argument.
 
 To see an example using the ``compute`` function, check the example :ref:`compute_exemple`.
+
+
+
+Move the camera easily
+----------------------
+
+Anim package provide a `TimePath` class which make it easy to create fancy animations where you can easily define a path for the camera.
+
+Please check the Example :ref:`path_exemple` to see how it works, and a nice example.

@@ -15,8 +15,8 @@ def pngScrapper(block, block_vars, gallery_conf, **kwargs):
     namespace = block_vars["example_globals"]
     for var in ["ANIM_FPS", "plot"]:
         if var not in namespace:
-            print(f"Carefull, it miss variable '{var}' in the exemple")
-            print("we will use normal scrapper")
+            logger.error(f"Carefull, it miss variable '{var}' in the exemple")
+            logger.error("we will use normal scrapper")
             return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
     ANIM_FPS = namespace["ANIM_FPS"]

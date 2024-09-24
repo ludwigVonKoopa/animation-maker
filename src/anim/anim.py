@@ -235,6 +235,9 @@ def build_images(
                 logger.debug(f"fig {i_future+1:03d}/{_tot} done : {statStorage[stat]}")
 
     if need_delete_client:
+        import time
+
+        time.sleep(0.5)
         client.close()
         client.cluster.close()
 
