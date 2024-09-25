@@ -50,7 +50,8 @@ def usage():
         default=False,
         help=(
             "Show the first image from animation then quit. Usefull to visualize and check if your parameters are correct, before doing all the computations. "
-            "if nothing is specified after '-s', show the image with `plt.show()`. If an argument is specified, we store the image using the name specified"
+            "if nothing is specified after '-s', show the image with `plt.show()`. If an argument is specified, we store the image using the name specified."
+            "You can specify a patern name for example `image_{i:03d}.png`, and the i will be interpolated to the indice of the image, usefull when you specified --only arg"
         ),
     )
 
@@ -61,6 +62,12 @@ def usage():
         type=int,
         default=[],
         help="compute only images with specified indices, without multiprocessing. Usefull for debbuging purposes.",
+    )
+
+    group1.add_argument(
+        "--ffmpeg-log",
+        action="store_true",
+        help="print all ffmpeg logs. If not specified, run `ffmpeg` with `-loglevel quiet`",
     )
 
     group2 = parser.add_argument_group("ImGifage Creation", "parameters for gif creation")
@@ -171,6 +178,7 @@ def app():
                 force=args.force,
                 nprocess=args.nprocess,
                 only_convert=args.no_compute,
+                ffmpeg_log=args.ffmpeg_log,
             )
 
             if args.gif is not False:

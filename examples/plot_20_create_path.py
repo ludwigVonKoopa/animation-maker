@@ -27,8 +27,9 @@ def plot(i_image, ds):
 
     extent = ds.attrs["extent"]
     tn = ds.attrs["tn"]
+    speed = ds.attrs["speed"]
 
-    fig = plt.figure(figsize=(6, 3), dpi=90)
+    fig = plt.figure(figsize=(7, 3.5), dpi=80)
 
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent(extent, crs=ccrs.PlateCarree())
@@ -45,7 +46,7 @@ def plot(i_image, ds):
     x = (x0 + x1) / 2
     y = (y0 + y1) / 2
 
-    ax.set_title(f"date={tn}, i_image={i_image:03d}, pos=({x:7.2f}, {y:7.2f})")
+    ax.set_title(f"i={i_image:03d} date={tn} | pos=({x:6.2f}, {y:6.2f}), speed={speed:6.2f}°/day", fontsize=11)
 
     return fig
 
@@ -57,13 +58,19 @@ def compute():
     dt = np.timedelta64(int(60 * 60 * 24 / ANIM_FPS), "s")
 
     path = TimePath(coords=(-5, 36), dx=20, dy=10, t0=t0)
+    # move to the coordinate (9, 43) in 2 days
     path.move(np.timedelta64(2, "D"), coords=(9, 43))
+    # move to the coordinate (15, 41) in 1 days
     path.move(np.timedelta64(1, "D"), coords=(15, 41))
+    # move to the coordinate (26, 36) in 3 days and zoom in (=> reducing dx and dy by a half)
     path.move_and_zoom(np.timedelta64(3, "D"), zoom=2, coords=(26, 36))
-    # wait a little
+
+    # wait a little (move to the same place in 1 day, so no move)
     path.move(np.timedelta64(1, "D"))
+
+    # don't move, but change the zooming by dezooming until having dx=40 and dy=20
     path.move_and_focus(np.timedelta64(3, "D"), dx=40, dy=20)
 
-    for tn, extent in zip(*path.compute_path(dt)):
-        ds = xr.Dataset(attrs={"tn": tn, "extent": extent})
+    for tn, extent, speed in zip(*path.compute_path(dt)):
+        ds = xr.Dataset(attrs={"tn": tn, "extent": extent, "speed": speed})
         yield ds

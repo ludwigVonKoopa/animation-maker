@@ -52,7 +52,7 @@ def image_patern(n_frames=None):
     return f"img_%0{n_zeros}d.png"
 
 
-def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt="yuv420p"):
+def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt="yuv420p", ffmpeg_log=False):
     """convert images into mp4 video
 
     Parameters
@@ -71,6 +71,8 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
     pix_fmt : str
         pixel format. I don't remember but its OK.
         If you don't specify yuv420p, you cannot read your video into the webbrowser
+    ffmpeg_log : bool
+        print all ffmpeg logs. If not specified, run `ffmpeg` with `-loglevel quiet`
     """
 
     with Timing() as dt:
@@ -81,8 +83,13 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
         except FileNotFoundError:
             pass
 
+        if ffmpeg_log:
+            _cmd = "ffmpeg "
+        else:
+            _cmd = "ffmpeg -loglevel error "
+
         cmd = (
-            "ffmpeg -loglevel quiet "
+            f"{_cmd}"
             f" -framerate {fps} "
             f" -i {imagePatern} "
             f" -c:v {vcodec} "
@@ -93,8 +100,12 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
         )
 
         logger.info("ffmpeg command : \n%s", cmd)
-        os.system(cmd)
-    logger.info(f"video {videoName} done! (ffmpeg time : {dt})")
+        res = os.system(cmd)
+
+    if res != 0:
+        logger.error("video not created, ffmpeg error. Please use -v DEBUG to have full ffmpeg debug output")
+    else:
+        logger.warning(f"video {videoName} done! (ffmpeg time : {dt})")
 
     return videoName
 
@@ -107,7 +118,7 @@ def _check_video_name(videoName):
         raise ValueError(msg)
 
 
-def video2gif(videoName, gif_fps=10, scale=350):
+def video2gif(videoName, gif_fps=10, scale=350, ffmpeg_log=False):
     """convert mp4 into gif
 
     Parameters
@@ -118,6 +129,8 @@ def video2gif(videoName, gif_fps=10, scale=350):
         frame per seconds for the gif, by default 15
     scale : int, optional
         height in pixel size. Video scale is kept. by default 350
+    ffmpeg_log : bool
+        print all ffmpeg logs. If not specified, run `ffmpeg` with `-loglevel quiet`
     """
 
     with Timing() as dt:
@@ -133,18 +146,31 @@ def video2gif(videoName, gif_fps=10, scale=350):
         # cmd = "ffmpeg " f" -i {videoName} -i {palette} " f' -lavfi "{filters} [x]; [x][1:v] paletteuse" -y {gifName}'
 
         # os.system(cmd)
+        if ffmpeg_log:
+            _cmd = "ffmpeg"
+        else:
+            _cmd = "ffmpeg -loglevel error "
+
         cmd = (
-            "ffmpeg -loglevel quiet "
+            f"{_cmd}"
             f" -i {videoName} "
             f' -vf "fps={gif_fps},scale=-1:{scale}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"'
             " -loop 0"
             f" -y {gifName}"
         )
         logger.info(cmd)
-        os.system(cmd)
-    logger.warning(f"gif {gifName} fait! (temps ffmpeg : {dt})")
+        res = os.system(cmd)
+
+    if res != 0:
+        logger.error("video not created, ffmpeg error. Please use -v DEBUG to have full ffmpeg debug output")
+    else:
+        logger.warning(f"gif {gifName} fait! (temps ffmpeg : {dt})")
 
     return gifName
+
+
+def parallelize_computation(func, data_iterator, client=None):
+    pass
 
 
 def _sanitize_inputs(max_frames, compute):

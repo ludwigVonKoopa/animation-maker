@@ -48,7 +48,7 @@ class Test_TimePath:
         tp = anim.path.TimePath((0, 0), 0, 0, t0)
         tp.move(np.timedelta64(1), (0, 0))
         tp.move(np.timedelta64(6), (0, 0))
-        times, _ = tp.compute_path(np.timedelta64(1))
+        times, _, _ = tp.compute_path(np.timedelta64(1))
 
         ref = np.arange(t0, t0 + np.timedelta64(7))
         np.testing.assert_array_equal(times, ref)
@@ -60,7 +60,7 @@ class Test_TimePath:
         tp = anim.path.TimePath((0, 0), 0, 0, t0)
         tp.move(np.timedelta64(1), (0, 0))
         tp.move(np.timedelta64(6), (0, 0))
-        times, _ = tp.compute_path(np.timedelta64(1, "h"))
+        times, _, _ = tp.compute_path(np.timedelta64(1, "h"))
 
         ref = np.arange(t0, t0 + np.timedelta64(7), np.timedelta64(1, "h"))
         np.testing.assert_array_equal(times, ref)
@@ -72,7 +72,7 @@ class Test_TimePath:
         tp = anim.path.TimePath((0, 0), 0, 0, t0)
         tp.move(np.timedelta64(1), (0, 0))
         tp.move(np.timedelta64(6), (0, 0))
-        _, extents = tp.compute_path(np.timedelta64(1))
+        _, extents, _ = tp.compute_path(np.timedelta64(1))
 
         ref = np.zeros((7, 4))
         np.testing.assert_array_equal(extents, ref)
@@ -83,7 +83,7 @@ class Test_TimePath:
         tp.move(np.timedelta64(1, "D"), (0, 24))
         tp.move(np.timedelta64(2, "D"), (48, 24))
         tp.move(np.timedelta64(1, "D"))
-        _, extents = tp.compute_path(np.timedelta64(1, "h"))
+        _, extents, _ = tp.compute_path(np.timedelta64(1, "h"))
 
         np.testing.assert_array_equal(extents[0], np.array([-1, 1, -1, 1]))
         np.testing.assert_array_equal(extents[24], np.array([-1, 1, 23, 25]))
@@ -95,7 +95,7 @@ class Test_TimePath:
         tp.move_and_zoom(np.timedelta64(1, "D"), zoom=2)
         tp.move_and_zoom(np.timedelta64(1, "D"), zoom=4)
         tp.move(np.timedelta64(1, "D"))
-        times, extents = tp.compute_path(np.timedelta64(1, "h"))
+        times, extents, _ = tp.compute_path(np.timedelta64(1, "h"))
 
         ref = np.arange(t0, t0 + np.timedelta64(3, "D"), np.timedelta64(1, "h"))
         np.testing.assert_array_equal(times, ref)
@@ -132,7 +132,7 @@ class Test_FramePath:
         tp.move(10, (0, 24))
         tp.move(20, (48, 24))
         tp.move(10)
-        _, extents = tp.compute_path()
+        _, extents, _ = tp.compute_path()
 
         np.testing.assert_array_equal(extents[0], np.array([-1, 1, -1, 1]))
         np.testing.assert_array_equal(extents[10], np.array([-1, 1, 23, 25]))

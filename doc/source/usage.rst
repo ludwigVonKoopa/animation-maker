@@ -163,11 +163,72 @@ create the ``circle.py`` file
 
 then start
 
-.. code-block:: console
+.. code-block:: bash
 
     anim circle.py
 
 you can check the result in the example :ref:`small_reference`
+
+
+
+Most practical way to use this tool
+===================================
+
+When we are making an animation, most of the time we need a lot of trials / tests to adjust some little parameters, size, or fontsize for example.
+
+Animation making can be long and computation expensive, and for this simple modification you don't need to build all the animation to confirm you changes, usually only the first frames is enough.
+
+
+Compute only the first image
+----------------------------
+
+To only compute the first image of you animation, you can use the ``--show`` / ``-s`` parameter. It won't use parallelization, just simply build the image and quit.
+
+
+.. code-block:: bash
+
+    anim fancy_animation.py -s
+
+
+It will open a matplotlib figure, as ``plt.show()`` would.
+
+If you don't want to have a popup with the figure, you can save it in a file. Just pass the name of the image to the ``show`` argument.
+
+.. code-block:: bash
+
+    anim fancy_animation.py -s testing_image.png
+
+
+Compute only specific images
+----------------------------
+
+Sometimes the modification you did on your plotting function is only affecting certain images.
+You can tell ``anim`` to show indices you want by specifying ``--only`` argument
+
+.. code-block:: bash
+
+    # open a windows with the 64th image computed
+    anim fancy_animation.py --only 64 -s
+
+
+This will only compute the 64th image of the animation.
+Beware that all data are computed (if you specified a ``compute`` function for example), just not used for image creation.
+
+.. code-block:: bash
+
+    # open a windows with the 2nd image, then 64, then 135, then 256
+    anim fancy_animation.py --only 2 64 135 256 -s
+
+
+You can specify multiples images to be computed. The first one will be displayed, then the second one, etc..
+
+If you still don't want a display and prefer saving the file, you can combine the ``only`` argument and the ``show`` to save multiple pngs.
+Just pass a name containing the template ``i``, so anim will interpolate with the image indice.
+
+.. code-block:: bash
+
+    # save the images `testing_005.png` and `testing_125.png`
+    anim fancy_animation.py --only 5 125 -s testing_{i:03d}.png
 
 
 Features
@@ -189,9 +250,9 @@ The name of the gif will be the same as the video, with extension modified
             video_name = anim.animate(plot, folder, fps, max_frames=max_frames)
             gif_name = anim.video2gif(video_name, gif_fps=5)  # <== specify fps of the giff
 
-    .. tab-item:: console
+    .. tab-item:: bash
 
-        .. code-block:: console
+        .. code-block:: bash
 
             anim circle.py -g 5  # <== specify fps of the gif
 
@@ -232,3 +293,60 @@ Move the camera easily
 Anim package provide a `TimePath` class which make it easy to create fancy animations where you can easily define a path for the camera.
 
 Please check the Example :ref:`path_exemple` to see how it works, and a nice example.
+
+How to use it
++++++++++++++
+
+You design a path, which means a serie of points where your camera should go, and when the camera should be there.
+
+For example, lets create a Path with 2 coordinates
+
+.. code-block:: python
+
+    import anim.path
+    import numpy as np
+
+
+    t0 = np.datetime64("2024-01-01")
+
+    path = anim.path.TimePath(coords=(-5, 36), dx=20, dy=10, t0=t0)
+    path.move(np.timedelta64(2, "D"), coords=(10, 36))
+
+    dates, extents, speed = path.compute_path(np.timedelta64(1, "h"))
+
+
+With this code, the animation will start with the camera cented at ``-5, 36`` with 40 (20*2) degree width and 20 (10*2) degrees height.
+The ``dx`` and ``dy`` argument tells you how many degrees do you want each side of your points.
+
+For example, a starting position of ``coords=(x0, y0), dx, dy`` would create a cartopy map with ``extent=[x0-dx, x0+dx, y0-dy, y0+dy]``
+
+Then, in 2 days, the camera should be at the position ``10, 36``.
+
+the ``compute_path`` method will then compute each date, extent and speed value for each images.
+
+The utility for the ``TimePath`` class is it will compute each points by using smooth interpolation, so the camera move smoothly with adjusted acceleration, then decelleration.
+
+
+
+
+.. plot::
+    :include-source:
+
+
+    import anim.path
+    import numpy as np
+
+
+    t0 = np.datetime64("2024-01-01")
+
+    path = anim.path.TimePath(coords=(-5, 36), dx=20, dy=10, t0=t0)
+    path.move(np.timedelta64(2, "D"), coords=(10, 36))
+
+
+    # dates, extents, speed = path.compute_path(np.timedelta64(1, "h"))
+    fig, ax = path.plot_moves(np.timedelta64(1, "h"))
+
+
+You can see the acceleration then decelleration of ``x`` over time, while ``y``, ``dx`` and ``dy`` did not move.
+
+Please check the Example :ref:`path_exemple` to see a complete live example.

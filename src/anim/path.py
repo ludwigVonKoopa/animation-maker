@@ -89,13 +89,14 @@ class Path:
         dates = np.array(self._times)
         dxs = np.array(self._dxs)
         dys = np.array(self._dys)
-        time_coords = np.arange(dates[0], dates[-1], dt, dtype=dates.dtype)
+        time_coords = np.arange(dates[0], dates[-1], dt)
         return x, y, dxs, dys, dates, time_coords
 
     def _interp_moves(self, x, y, dxs, dys, dates, new_dates):
         # convert to float for interpolation
-        int_dates = dates.astype(float)
         int_new_dates = new_dates.astype(float)
+        # force both dates to have the same datetime type (s, ms, ns, ...)
+        int_dates = dates.astype(new_dates.dtype).astype(float)
 
         def build_dxdy(x, y):
             dxdy = np.zeros(y.size)
@@ -110,6 +111,10 @@ class Path:
             dxdy[1:-1] = np.where((dy_b * dy_a > 0), np.mean([dy_b, dy_a], axis=0), 0)
             return dxdy
 
+        # cubic hermite splice is used because it gives a result which is :
+        #   continuous
+        #   first derivative is continuous too
+        # => it gives you a nice path without spike deplacements, smooth acceleration and decelerations
         f = interpolate.CubicHermiteSpline(int_dates, x, dydx=build_dxdy(int_dates, x))
         X = f(int_new_dates)
 
@@ -123,11 +128,36 @@ class Path:
         return new_dates, X, Y, new_dx, new_dy
 
     def _compute_path(self, dt):
+        """compute path for the required points of interests
+
+        Parameters
+        ----------
+        dt : int or numpy.timedelta64
+            the unit for image computation.
+            An image will be created for eath `dt` time passed
+
+        Returns
+        -------
+        tuple
+            return new_dates, cartopy_extent, speed
+            where :
+                new_dates is the date (np.datetime64) of the image, or the indice of the image
+                cartopy_extent is a list of [x0, x1, y0, y1] coordinates used by ax.set_extent(...)
+                speed is the camera speed between this image and the last one.
+                    if dates is an np.datetime64, the speed will be `degrees / s`
+                    if dates is an int, the speed will be `degrees / images`
+
+        """
         x, y, dxs, dys, dates, new_dates = self._merge_moves(dt)
         new_dates, X, Y, new_dx, new_dy = self._interp_moves(x, y, dxs, dys, dates, new_dates)
 
+        length = np.zeros(X.shape, dtype=np.float64)
+
+        dist = np.sqrt((X[1:] - X[:-1]) ** 2 + (Y[1:] - Y[:-1]) ** 2)
+        length[1:] = dist
+
         cartopy_extent = np.array([X - new_dx, X + new_dx, Y - new_dy, Y + new_dy]).T
-        return new_dates, cartopy_extent
+        return new_dates, cartopy_extent, length
 
     ### VISUALISATION ###
     #####################
@@ -136,38 +166,41 @@ class Path:
         x, y, dxs, dys, dates, new_dates = self._merge_moves(dt)
         new_dates, X, Y, new_dx, new_dy = self._interp_moves(x, y, dxs, dys, dates, new_dates)
 
+        dates = dates.astype("datetime64[ns]")
+        new_dates = new_dates.astype("datetime64[ns]")
+
         ds = xr.Dataset()
         kw = {"units": "degrees"}
 
         if derivative:
-            dtime = (new_dates[1:] - new_dates[:-1]) / np.timedelta64(1, "D")
-            ds["x"] = (["points"], (X[1:] - X[:-1]) / dtime, kw)
-            ds["y"] = (["points"], (Y[1:] - Y[:-1]) / dtime, kw)
-            ds["dx"] = (["points"], (new_dx[1:] - new_dx[:-1]) / dtime, kw)
-            ds["dy"] = (["points"], (new_dy[1:] - new_dy[:-1]) / dtime, kw)
-            ds["time"] = (["points"], new_dates[1:])
-            ds = ds.set_coords(["time"]).rename({"points": "time"})
-            ds2 = ds.interp(time=dates).rename_dims({"time": "old"})
+            dtime = dt / np.timedelta64(1, "D")
+            ds["x"] = (["time"], (X[1:] - X[:-1]) / dtime, kw)
+            ds["y"] = (["time"], (Y[1:] - Y[:-1]) / dtime, kw)
+            ds["dx"] = (["time"], (new_dx[1:] - new_dx[:-1]) / dtime, kw)
+            ds["dy"] = (["time"], (new_dy[1:] - new_dy[:-1]) / dtime, kw)
+            ds["time"] = (["time"], new_dates[1:])
+            ds = ds.set_coords(["time"])  # .rename({"time": "time"})
+            ds2 = ds.interp(time=dates).rename({"time": "old_time"})
 
             for var in ds2.variables:
                 ds[var + "_old"] = ds2[var]
 
         else:
-            ds["x_old"] = (["old"], x, kw)
-            ds["y_old"] = (["old"], y, kw)
-            ds["dx_old"] = (["old"], dxs, kw)
-            ds["dy_old"] = (["old"], dys, kw)
-            ds["time_old"] = (["old"], dates)
+            ds["x_old"] = (["old_time"], x, kw)
+            ds["y_old"] = (["old_time"], y, kw)
+            ds["dx_old"] = (["old_time"], dxs, kw)
+            ds["dy_old"] = (["old_time"], dys, kw)
+            ds["old_time"] = (["old_time"], dates)
 
-            ds["x"] = (["points"], X, kw)
-            ds["y"] = (["points"], Y, kw)
-            ds["dx"] = (["points"], new_dx, kw)
-            ds["dy"] = (["points"], new_dy, kw)
-            ds["time"] = (["points"], new_dates)
-            ds = ds.set_coords(["time"]).rename({"points": "time"})
+            ds["x"] = (["time"], X, kw)
+            ds["y"] = (["time"], Y, kw)
+            ds["dx"] = (["time"], new_dx, kw)
+            ds["dy"] = (["time"], new_dy, kw)
+            ds["time"] = (["time"], new_dates)
+            ds = ds.set_coords(["time", "old_time"])
         return ds
 
-    def plot_deplacements(self, dt, variables=["x", "y", "dx", "dy"], derivated=False):
+    def plot_moves(self, dt, variables=["x", "y", "dx", "dy"], derivated=False):
         """Build a matplotlib plot with different variables, to visualize the path
 
         Parameters
@@ -196,14 +229,17 @@ class Path:
 
         ds = self._build_xarray(dt, variables, derivated)
 
-        fig, axs = plt.subplots(len(variables), 1, figsize=(15, 8), dpi=120)
+        fig, axs = plt.subplots(len(variables), 1, figsize=(10, 5), dpi=120)
         for i, (ax, var) in enumerate(zip(axs, variables)):
             ax.grid()
-            ds[var + "_old"].plot(ax=ax, label=f"real ({ds.dims['old']} pts)", marker="o", x="time_old", linestyle="")
-            ds[var].plot(ax=ax, label=f"interpolated ({ds.dims['time']} pts)", x="time")
+            ds[var + "_old"].plot(
+                ax=ax, label=f"real ({ds.sizes['old_time']} pts)", marker="o", x="old_time", linestyle=""
+            )
+            ds[var].plot(ax=ax, label=f"interpolated ({ds.sizes['time']} pts)", x="time")
             if i < len(variables) - 1:
                 ax.set_xticklabels([])
             ax.legend()
+        logger.error(str(ds))
         return fig, ax
 
 
@@ -211,7 +247,7 @@ class TimePath(Path):
     def __init__(self, coords=(180, 0), dx=180, dy=90, t0=0):
         datetype = type(np.datetime64("now"))
 
-        # détermination si on utilise des dates ou des images
+        # we should have only datetime64
         if not isinstance(t0, datetype):
             raise TypeError(f"t0 should be a `numpy.datetime64`, not '{type(t0)}'")
 
@@ -224,6 +260,12 @@ class TimePath(Path):
         if not isinstance(t, (datetype, timetype)):
             logger.error(f"time shoud be type `np.datetime64` or `np.timedelta64`, not {type(t)}")
             raise TypeError("time bad type")
+
+    def _sanitize_dt(cls, t):
+        timetype = type(np.timedelta64(1, "D"))
+        if not isinstance(t, timetype):
+            logger.error(f"dt shoud be type `np.timedelta64`, not {type(t)}")
+            raise TypeError("dt bad type")
 
     def _add_time(self, t):
         last_date = self._times[-1]
@@ -240,7 +282,15 @@ class TimePath(Path):
         self._times.append(date)
 
     def compute_path(self, dt):
-        return self._compute_path(dt)
+        self._sanitize_dt(dt)
+
+        # length is in degrees / dt (could be hours, seconds or days)
+        new_dates, cartopy_extent, length = self._compute_path(dt)
+
+        # gives speed in degrees / day
+        speed = length * (np.timedelta64(1, "D") / dt)
+
+        return new_dates, cartopy_extent, speed
 
 
 class FramePath(Path):

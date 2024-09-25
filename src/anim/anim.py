@@ -108,9 +108,10 @@ def simple_building(
                 if show is None:
                     plt.show()
                 else:
-                    fig.savefig(show, **savefig_kwargs)
-                    logger.info(f"figure i={_i} saved in '{show}'")
-                return
+                    name = show.format(i=_i)
+                    fig.savefig(name, **savefig_kwargs)
+                    logger.info(f"figure i={_i} saved in '{name}'")
+
             else:
                 f_plot(_i, ds)
     return
@@ -259,6 +260,7 @@ def animate(
     nprocess=0,
     only_convert=False,
     max_memory_ds=1e6,
+    ffmpeg_log=False,
 ):
     """create images in parallel and then combine them in a video
 
@@ -293,6 +295,8 @@ def animate(
     max_memory_ds : int, optional
         if data provided by `compute` exceed max_memory_ds, it will be compressed in zarr to minimise ram usage.
         By default 1e6
+    ffmpeg_log : bool, optional
+        print all ffmpeg logs. If not specified, run `ffmpeg` with `-loglevel quiet
 
     Returns
     -------
@@ -327,5 +331,5 @@ def animate(
     if ext != ".mp4":
         ext = ext + ".mp4"
 
-    images2video(imageNames, fps, pathVideo)
+    images2video(imageNames, fps, pathVideo, ffmpeg_log=ffmpeg_log)
     return pathVideo
