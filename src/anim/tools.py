@@ -105,7 +105,7 @@ def images2video(imagePatern, fps, videoName, crf=24, vcodec="libx264", pix_fmt=
     if res != 0:
         logger.error("video not created, ffmpeg error. Please use -v DEBUG to have full ffmpeg debug output")
     else:
-        logger.warning(f"video {videoName} done! (ffmpeg time : {dt})")
+        logger.info(f"video {videoName} done! (ffmpeg time : {dt})")
 
     return videoName
 
@@ -164,7 +164,7 @@ def video2gif(videoName, gif_fps=10, scale=350, ffmpeg_log=False):
     if res != 0:
         logger.error("video not created, ffmpeg error. Please use -v DEBUG to have full ffmpeg debug output")
     else:
-        logger.warning(f"gif {gifName} fait! (temps ffmpeg : {dt})")
+        logger.info(f"gif {gifName} fait! (temps ffmpeg : {dt})")
 
     return gifName
 

@@ -12,6 +12,8 @@ dependencies:
   # - cartopy
   - shapely
 
+  - ffmpeg
+
   - numpy
   - scipy
   - pandas

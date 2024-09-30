@@ -148,7 +148,6 @@ def build_images(
     need_delete_client = False
 
     if force:
-        logger.warning(os.path.dirname(imageNames))
         os.system(f"rm -rf {os.path.dirname(imageNames)}")
         os.system(f"mkdir -p {os.path.dirname(imageNames)}")
 
@@ -259,6 +258,7 @@ def animate(
     force=False,
     nprocess=0,
     only_convert=False,
+    no_convert=False,
     max_memory_ds=1e6,
     ffmpeg_log=False,
 ):
@@ -292,6 +292,8 @@ def animate(
         If not provided, use all cpus
     only_convert : bool, optional
         if True, don't generate images at all. We only build the video, by default False
+    no_convert : bool, optional
+        if True, don't generate a video at all. We only build the images
     max_memory_ds : int, optional
         if data provided by `compute` exceed max_memory_ds, it will be compressed in zarr to minimise ram usage.
         By default 1e6
@@ -331,5 +333,6 @@ def animate(
     if ext != ".mp4":
         ext = ext + ".mp4"
 
-    images2video(imageNames, fps, pathVideo, ffmpeg_log=ffmpeg_log)
+    if not no_convert:
+        images2video(imageNames, fps, pathVideo, ffmpeg_log=ffmpeg_log)
     return pathVideo

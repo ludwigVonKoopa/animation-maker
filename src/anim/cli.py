@@ -39,6 +39,11 @@ def usage():
         action="store_true",
         help="Don't compute any images. Use only ffmpeg. Usefull if images are already computed and takes time",
     )
+    group1.add_argument(
+        "--no-convert",
+        action="store_true",
+        help="Don't compute any video. Only compute images",
+    )
     group1.add_argument("-f", "--force", action="store_true", help="force saving images even if they already exist")
 
     group1.add_argument(
@@ -178,6 +183,7 @@ def app():
                 force=args.force,
                 nprocess=args.nprocess,
                 only_convert=args.no_compute,
+                no_convert=args.no_convert,
                 ffmpeg_log=args.ffmpeg_log,
             )
 

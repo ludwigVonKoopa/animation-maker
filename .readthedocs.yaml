@@ -1,0 +1,77 @@
+# Read the Docs configuration file for Sphinx projects
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+# Set the OS, Python version and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-22.9"
+  # jobs:
+    # pre_system_dependencies:
+    #   - echo "pre_system_dependencies"
+    # post_system_dependencies:
+    #   - echo "post_system_dependencies"
+    # pre_create_environment:
+    #   - echo "pre_create_environment"
+    # post_create_environment:
+    #   - echo "post_create_environment"
+    # pre_install:
+    #   - echo "pre_install"
+    # post_install:
+    #   - echo "post_install"
+    # pre_build:
+    #   - echo "pre_build"
+    # post_build:
+    #   - echo "post_build"
+
+
+    # pre_build:
+    #   - which python
+    #   - which conda
+    #   - which mamba
+    #   - which pip
+    #   - pip install .
+    #   - anim -h
+    #   - bash scripts/build_logo.sh
+
+    # post_build:
+    #   - cp doc/source/gallery/images/*.mp4 doc/build/html/_images/
+
+  commands:
+    - which python
+    - which mamba
+    - mamba env create --quiet --name latest --file environment_dev.yml
+
+    - which pip
+    - pip install .
+
+    - cartopy_feature_download physical
+    - pwd
+    - echo "$READTHEDOCS_OUTPUT/html"
+    - bash scripts/build_logo.sh
+
+    - sphinx-build -M html doc/source doc/build
+    - cp doc/source/gallery/images/*.mp4 doc/build/html/_images/
+
+    - mkdir -p $READTHEDOCS_OUTPUT/html
+    - cp -R  doc/build/html $READTHEDOCS_OUTPUT/
+
+
+conda:
+  environment: environment_dev.yml
+
+# Build documentation in the "docs/" directory with Sphinx
+sphinx:
+  configuration: doc/source/conf.py
+  # You can configure Sphinx to use a different builder, for instance use the dirhtml builder for simpler URLs
+  # builder: "dirhtml"
+  # Fail on all warnings to avoid broken references
+  # fail_on_warning: true
+
+# Optionally build your docs in additional formats such as PDF and ePub
+# formats:
+#   - pdf
+#   - epub

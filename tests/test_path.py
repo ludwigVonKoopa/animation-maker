@@ -6,19 +6,19 @@ import anim.path
 
 class Test_TimePath:
     def test_setup(self):
-        tp = anim.path.TimePath((0, 0), 0, 0, np.datetime64("now"))
+        tp = anim.path.TimePath((0, 0), 0, 0, np.datetime64("now"))  # noqa: F841
 
     def test_wrong_time_init_1(self):
         """fail because t0 should be np.datetime64"""
 
         with pytest.raises(TypeError):
-            tp = anim.path.TimePath((0, 0), 0, 0, t0=0)
+            tp = anim.path.TimePath((0, 0), 0, 0, t0=0)  # noqa: F841
 
     def test_wrong_time_init_2(self):
         """fail because t0 should be np.datetime64"""
 
         with pytest.raises(TypeError):
-            tp = anim.path.TimePath((0, 0), 0, 0, np.timedelta64(5, "s"))
+            tp = anim.path.TimePath((0, 0), 0, 0, np.timedelta64(5, "s"))  # noqa: F841
 
     def test_wrong_time_move_1(self):
         """fail because time should be np.datetime64"""
@@ -31,7 +31,7 @@ class Test_TimePath:
         """fail because coords should be tuple"""
 
         with pytest.raises(TypeError):
-            tp = anim.path.TimePath(set(), 0, 0, np.datetime64("now"))
+            tp = anim.path.TimePath(set(), 0, 0, np.datetime64("now"))  # noqa: F841
 
     def test_wrong_time_compute(self):
         """fail because time specified is before last time"""
@@ -103,13 +103,13 @@ class Test_TimePath:
 
 class Test_FramePath:
     def test_setup(self):
-        tp = anim.path.FramePath((0, 0), 0, 0)
+        tp = anim.path.FramePath((0, 0), 0, 0)  # noqa: F841
 
     def test_wrong_coords_init_1(self):
         """fail because coords should be tuple"""
 
         with pytest.raises(TypeError):
-            tp = anim.path.FramePath(set(), 0, 0)
+            tp = anim.path.FramePath(set(), 0, 0)  # noqa: F841
 
     def test_wrong_time_move_1(self):
         """fail because time specified is before last time"""
